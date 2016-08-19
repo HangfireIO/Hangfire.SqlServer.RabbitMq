@@ -14,7 +14,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
                 var body = Encoding.UTF8.GetBytes(jobId);
 
                 var properties = messageQueue.Channel.CreateBasicProperties();
-                properties.SetPersistent(true);
+                properties.Persistent = true;
 
                 messageQueue.Channel.BasicPublish("", queue, properties, body);
             }

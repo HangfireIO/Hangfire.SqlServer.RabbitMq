@@ -78,7 +78,7 @@ namespace Hangfire.SqlServer.RabbitMQ
         {
             var body = Encoding.UTF8.GetBytes(jobId);
             var properties = _channel.CreateBasicProperties();
-            properties.SetPersistent(true);
+            properties.Persistent = true;
 
             _channel.BasicPublish("", queue, properties, body);
         }
@@ -111,7 +111,7 @@ namespace Hangfire.SqlServer.RabbitMQ
                 _channel.BasicQos(0, 1, false);
 
                 var properties = _channel.CreateBasicProperties();
-                properties.SetPersistent(true);
+                properties.Persistent = true;
 
                 // QueueDeclare is idempotent
                 foreach (var queue in _queues)
