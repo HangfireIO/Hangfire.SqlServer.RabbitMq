@@ -14,6 +14,10 @@
     <tags>Hangfire SqlServer RabbitMQ</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire.SqlServer.RabbitMq/releases
     
+1.6.0
+* Changed – `RabbitMq.Client` package updated to 3.6.5.
+* Changed – `RabbitMq.Client.dll` assembly merged with `Hangfire.SqlServer.RabbitMq.dll`.
+    
 1.4.2
 * Fixed – Incompatibility issue with RabbitMQ.Client >= 3.4.0 (by @justmara).
     
@@ -23,7 +27,6 @@
     <dependencies>
       <dependency id="Hangfire.Core" version="1.5.0" />
       <dependency id="Hangfire.SqlServer" version="1.5.0" />
-      <dependency id="RabbitMQ.Client" version="3.3.0" />
     </dependencies>
   </metadata>
   <files>
