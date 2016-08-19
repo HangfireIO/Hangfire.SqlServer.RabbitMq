@@ -1,7 +1,9 @@
 Hangfire.SqlServer.RabbitMq
 ============================
 
-Hangfire RabbitMQ Queues for SQL Server Storage.
+[![Maintainers Wanted](https://img.shields.io/badge/maintainers-wanted-red.svg)](https://github.com/pickhardt/maintainers-wanted) [![NuGet](https://img.shields.io/nuget/v/Nuget.Core.svg)](https://www.nuget.org/packages/Hangfire.SqlServer.RabbitMQ/) [![Build status](https://ci.appveyor.com/api/projects/status/syxk488k2e45v2fo?svg=true)](https://ci.appveyor.com/project/odinserj/hangfire-sqlserver-rabbitmq)
+
+RabbitMQ queues support for SQL Server job storage implementation for Hangfire.
 
 Building the sources
 ---------------------
