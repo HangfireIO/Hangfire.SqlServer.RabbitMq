@@ -16,7 +16,7 @@ Task Merge -Depends Test -Description "Run ILMerge /internalize to merge assembl
 }
 
 Task Collect -Depends Merge -Description "Copy all artifacts to the build folder." {
-    Collect-Assembly "Hangfire.SqlServer.RabbitMq" "Net45"
+    Collect-Assembly "Hangfire.SqlServer.RabbitMq" "net45"
 }
 
 Task Pack -Depends Collect -Description "Create NuGet packages and archive files." {

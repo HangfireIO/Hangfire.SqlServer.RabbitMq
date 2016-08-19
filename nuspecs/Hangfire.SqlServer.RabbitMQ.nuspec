@@ -30,9 +30,9 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Net45\Hangfire.SqlServer.RabbitMQ.dll" target="lib\net45" />
-    <file src="Net45\Hangfire.SqlServer.RabbitMQ.xml" target="lib\net45" />
-    <file src="Net45\Hangfire.SqlServer.RabbitMQ.xml" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.RabbitMQ.dll" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.RabbitMQ.xml" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.RabbitMQ.xml" target="lib\net45" />
     <file src="..\src\Hangfire.SqlServer.RabbitMQ\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
   </files>
 </package>
