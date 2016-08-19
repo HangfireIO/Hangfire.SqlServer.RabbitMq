@@ -8,6 +8,7 @@ Include "packages\Hangfire.Build.0.2.5\tools\psake-common.ps1"
 Task Default -Depends Collect
 
 Task Test -Depends Compile -Description "Run unit and integration tests under OpenCover." {
+    Run-XunitTests "Hangfire.SqlServer.RabbitMq.Tests"
 }
 
 Task Merge -Depends Test -Description "Run ILMerge /internalize to merge assemblies." {

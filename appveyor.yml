@@ -32,6 +32,9 @@ nuget:
 #       build configuration       #
 #---------------------------------#
 
+install:
+  - choco install rabbitmq --ignoredependencies -y
+
 # to run your custom scripts instead of automatic MSBuild
 build_script: build.bat pack
 
