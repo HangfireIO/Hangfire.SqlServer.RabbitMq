@@ -15,6 +15,7 @@
     <releaseNotes>https://github.com/HangfireIO/Hangfire.SqlServer.RabbitMq/releases
     
 1.6.0
+* Changed – `Hangfire` dependencies are not strict now.
 * Changed – `RabbitMq.Client` package updated to 3.6.5.
 * Changed – `RabbitMq.Client.dll` assembly merged with `Hangfire.SqlServer.RabbitMq.dll`.
     
