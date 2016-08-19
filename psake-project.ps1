@@ -11,6 +11,7 @@ Task Test -Depends Compile -Description "Run unit and integration tests under Op
 }
 
 Task Merge -Depends Test -Description "Run ILMerge /internalize to merge assemblies." {
+    Merge-Assembly "Hangfire.SqlServer.RabbitMq" @("RabbitMq.Client")
 }
 
 Task Collect -Depends Merge -Description "Copy all artifacts to the build folder." {
