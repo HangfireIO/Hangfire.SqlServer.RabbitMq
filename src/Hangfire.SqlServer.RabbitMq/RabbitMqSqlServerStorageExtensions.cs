@@ -9,12 +9,13 @@ namespace Hangfire.SqlServer.RabbitMQ
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (queues == null) throw new ArgumentNullException("queues");
+            if (queues.Length == 0) throw new ArgumentException("No queue(s) specified for RabbitMQ provider.", "queues");
             if (configureAction == null) throw new ArgumentNullException("configureAction");
 
-            RabbitMqConnectionConfiguration conf = new RabbitMqConnectionConfiguration();
+            var conf = new RabbitMqConnectionConfiguration();
             configureAction(conf);
 
-            ConnectionFactory cf = new ConnectionFactory();
+            var cf = new ConnectionFactory();
 
             // Use configuration from URI, otherwise use properties
             if (conf.Uri != null)
@@ -30,7 +31,11 @@ namespace Hangfire.SqlServer.RabbitMQ
                 cf.VirtualHost = conf.VirtualHost;
             }
 
-            var provider = new RabbitMqJobQueueProvider(queues, cf);
+            var provider = new RabbitMqJobQueueProvider(queues, cf, channel => 
+                channel.BasicQos(0,
+                    100 /* TODO Make this a config setting with a sensible default (WorkerCount * 2?) */,
+                    false // applied separately to each new consumer on the channel
+                ));
 
             storage.QueueProviders.Add(provider, queues);
 

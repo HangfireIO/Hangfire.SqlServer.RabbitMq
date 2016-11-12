@@ -29,15 +29,15 @@ namespace Hangfire.SqlServer.RabbitMQ
 
         /// <remarks>
         /// RabbitMq does not have a Peek feature, the solution is to dequeue all messages
-        /// without acknowledging them (noAck = true). After all messages have been read
+        /// with acknowledgments required (noAck = false). After all messages have been read
         /// we dispose the RabbitMqJobQueue causing the channel to close. All unack'd
         /// messages then get requeued in order.
         /// </remarks>
         public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
         {
-            using (var client = new RabbitMqJobQueue(new[] {queue}, _factory))
+            using (var client = new RabbitMqJobQueue(new[] {queue}, _factory, null))
             {
-                var consumer = new Subscription(client.Channel, queue, true);
+                var consumer = new Subscription(client.Channel, queue, noAck: false);
 
                 List<int> jobIds = new List<int>();
                 BasicDeliverEventArgs delivery;
@@ -63,7 +63,7 @@ namespace Hangfire.SqlServer.RabbitMQ
         /// </remarks>
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
-            using (var client = new RabbitMqJobQueue(new[] {queue}, _factory))
+            using (var client = new RabbitMqJobQueue(new[] {queue}, _factory, null))
             {
                 var channel = client.Channel.QueueDeclare(queue, true, false, false, null);
 

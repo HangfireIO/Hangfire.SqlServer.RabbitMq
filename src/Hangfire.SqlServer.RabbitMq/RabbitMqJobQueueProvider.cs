@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
+using Hangfire.Annotations;
 using RabbitMQ.Client;
 
 namespace Hangfire.SqlServer.RabbitMQ
@@ -11,13 +9,14 @@ namespace Hangfire.SqlServer.RabbitMQ
         private readonly RabbitMqJobQueue _jobQueue;
         private readonly RabbitMqMonitoringApi _monitoringApi;
 
-        public RabbitMqJobQueueProvider(IEnumerable<string> queues, ConnectionFactory configureAction)
+        public RabbitMqJobQueueProvider(string[] queues, ConnectionFactory configureAction,
+            [CanBeNull] Action<IModel> configureConsumer)
         {
             if (queues == null) throw new ArgumentNullException("queues");
             if (configureAction == null) throw new ArgumentNullException("configureAction");
 
-            _jobQueue = new RabbitMqJobQueue(queues, configureAction);
-            _monitoringApi = new RabbitMqMonitoringApi(configureAction, queues.ToArray());
+            _jobQueue = new RabbitMqJobQueue(queues, configureAction, configureConsumer);
+            _monitoringApi = new RabbitMqMonitoringApi(configureAction, queues);
         }
 
         public IPersistentJobQueue GetJobQueue()

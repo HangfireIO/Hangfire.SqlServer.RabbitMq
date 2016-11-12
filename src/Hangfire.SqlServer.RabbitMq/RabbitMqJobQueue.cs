@@ -4,45 +4,62 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 using System.Threading;
+using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.Storage;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 namespace Hangfire.SqlServer.RabbitMQ
 {
+    /// <summary>
+    /// An <see cref="IPersistentJobQueue"/> implementatation for RabbitMQ.
+    /// Maintains a single RabbitMQ <see cref="IConnection"/>, as well as a dedicated <see cref="IModel"/> (aka channel) for publishing and 
+    /// one for consuming messages. The consumer channel owns a <see cref="QueueingBasicConsumer"/> for each
+    /// queue configured on the parent <see cref="IPersistentJobQueueProvider"/>.
+    /// </summary>
     public class RabbitMqJobQueue : IPersistentJobQueue, IDisposable
     {
         private static readonly int SyncReceiveTimeout = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
-        private static readonly object ConsumerLock = new object();
+        private static readonly object ConnectionLock = new object(); // used when re-creating the connection
+        private static readonly object ConsumerLock = new object();   // used for channel creation and serialzing ACK messages
+        private static readonly object PublisherLock = new object();  // used for channel creation and serializing Publish messages
         private readonly IEnumerable<string> _queues;
         private readonly ConnectionFactory _factory;
+        private readonly Action<IModel> _confConsumer;
         private readonly ConcurrentDictionary<string, QueueingBasicConsumer> _consumers;
         private IConnection _connection;
-        private IModel _channel;
+        private IModel _consumerChannel;
+        private IModel _publisherChannel;
 
-        public RabbitMqJobQueue(IEnumerable<string> queues, ConnectionFactory factory)
+        private static readonly Hangfire.Logging.ILog Logger = Hangfire.Logging.LogProvider.For<RabbitMqJobQueue>();
+
+        public RabbitMqJobQueue(IEnumerable<string> queues, ConnectionFactory factory,
+            [CanBeNull] Action<IModel> confConsumer)
         {
             if (queues == null) throw new ArgumentNullException("queues");
             if (factory == null) throw new ArgumentNullException("factory");
 
             _queues = queues;
             _factory = factory;
+            _confConsumer = confConsumer ?? (_ => {});
             _connection = factory.CreateConnection();
             _consumers = new ConcurrentDictionary<string, QueueingBasicConsumer>();
-
-            CreateChannel();
         }
 
-        public IModel Channel
+        internal IModel Channel
         {
             get
             {
-                return _channel;
+                EnsureConsumerChannel();
+                return _consumerChannel;
             }
         }
 
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
         {
+            EnsureConsumerChannel();
+
             BasicDeliverEventArgs message;
             var queueIndex = 0;
 
@@ -60,35 +77,81 @@ namespace Hangfire.SqlServer.RabbitMQ
                 }
                 catch (global::RabbitMQ.Client.Exceptions.AlreadyClosedException)
                 {
-                    CreateChannel();
+                    EnsureConsumerChannel();
                     message = null;
                 }
                 catch (System.IO.EndOfStreamException)
                 {
-                    CreateChannel();
+                    EnsureConsumerChannel();
                     message = null;
                 }
 
             } while (message == null);
 
-            return new RabbitMqFetchedJob(message, ref _channel);
+            var jobId = Encoding.UTF8.GetString(message.Body);
+            var deliveryTag = message.DeliveryTag;
+
+            return new RabbitMqFetchedJob(jobId,
+                () => {
+                    try
+                    {
+                        // not calling CreateChannel() as Ack/Nack need to be send on originating channel,
+                        // instead logging possible exceptions here
+                        lock (ConsumerLock)
+                        {
+                            _consumerChannel.BasicAck(deliveryTag, false);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException($"An error occurred sending basic.ack for Job#{jobId}.", ex);
+                    }
+                },
+                () => {
+                    try
+                    {
+                        lock (ConsumerLock)
+                        {
+                            _consumerChannel.BasicNack(deliveryTag, false, true);
+                            _consumerChannel.Close(global::RabbitMQ.Client.Framing.Constants.ReplySuccess, "Requeue");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException($"An error occurred sending basic.nack for Job#{jobId}.", ex);
+                    }
+                });
         }
 
         public void Enqueue(IDbConnection connection, string queue, string jobId)
         {
-            var body = Encoding.UTF8.GetBytes(jobId);
-            var properties = _channel.CreateBasicProperties();
-            properties.Persistent = true;
+            EnsurePublisherChannel();
 
-            _channel.BasicPublish("", queue, properties, body);
+            lock (PublisherLock) // Serializes all messages on publish channel
+            {
+                var body = Encoding.UTF8.GetBytes(jobId);
+                var properties = _publisherChannel.CreateBasicProperties();
+                properties.Persistent = true;
+
+                // TODO Allow to specify non-default exchange
+                _publisherChannel.BasicPublish("", queue, properties, body);
+
+                Logger.Debug($"Job enqueued: {jobId}");
+            }
         }
 
         public void Dispose()
         {
-            if (_channel != null)
+            if (_consumerChannel != null)
             {
-                if (_channel.IsOpen) _channel.Close();
-                _channel.Dispose();
+                if (_consumerChannel.IsOpen) _consumerChannel.Close();
+                _consumerChannel.Dispose();
+            }
+
+            if (_publisherChannel != null)
+            {
+                if (_publisherChannel.IsOpen) _publisherChannel.Close();
+                _publisherChannel.Dispose();
             }
 
             if (_connection != null)
@@ -98,25 +161,44 @@ namespace Hangfire.SqlServer.RabbitMQ
             }
         }
 
-        private void CreateChannel()
+        private void EnsureConsumerChannel()
         {
+            if (_consumerChannel != null && _consumerChannel.IsOpen && _connection.IsOpen) return;
+
             lock (ConsumerLock)
             {
-                if (_channel != null && _channel.IsOpen && _connection.IsOpen) return;
-
-                if (_channel != null && _channel.IsOpen) _channel.Abort();
-                if (!_connection.IsOpen) _connection = _factory.CreateConnection();
-
-                _channel = _connection.CreateModel();
-                _channel.BasicQos(0, 1, false);
-
-                var properties = _channel.CreateBasicProperties();
-                properties.Persistent = true;
-
-                // QueueDeclare is idempotent
-                foreach (var queue in _queues)
-                    _channel.QueueDeclare(queue, true, false, false, null);
+                CreateChannel(ref _consumerChannel);
+                _confConsumer(_consumerChannel);
             }
+        }
+
+        private void EnsurePublisherChannel()
+        {
+            if (_publisherChannel != null && _publisherChannel.IsOpen && _connection.IsOpen) return;
+
+            lock (PublisherLock)
+            {
+                CreateChannel(ref _publisherChannel);
+            }
+        }
+
+        private void CreateChannel(ref IModel channel)
+        {
+            if (channel != null && channel.IsOpen) channel.Abort();
+            if (!_connection.IsOpen)
+            {
+                lock (ConnectionLock)
+                    if (!_connection.IsOpen) _connection = _factory.CreateConnection();
+            }
+            channel = _connection.CreateModel();
+            channel.BasicQos(0,
+                100 /* TODO Make this a config setting with a sensible default (WorkerCount * 2?) */,
+                false // applied separately to each new consumer on the channel
+            );
+
+            // QueueDeclare is idempotent
+            foreach (var queue in _queues)
+                channel.QueueDeclare(queue, durable: true, exclusive: false, autoDelete: false, arguments: null); // be aware that monitoring API also performs QueueDeclare
         }
 
         private QueueingBasicConsumer GetConsumerForQueue(string queue, CancellationToken cancellationToken)
@@ -132,9 +214,9 @@ namespace Hangfire.SqlServer.RabbitMQ
                 {
                     if (!_consumers.TryGetValue(queue, out consumer))
                     {
-                        consumer = new QueueingBasicConsumer(_channel);
+                        consumer = new QueueingBasicConsumer(_consumerChannel);
                         _consumers.AddOrUpdate(queue, consumer, (dq, dc) => consumer);
-                        _channel.BasicConsume(queue, false, "Hangfire.RabbitMq." + Thread.CurrentThread.Name, consumer);
+                        _consumerChannel.BasicConsume(queue, false, "Hangfire.RabbitMq." + Thread.CurrentThread.Name, consumer);
                     }
                 }
             }
@@ -148,9 +230,9 @@ namespace Hangfire.SqlServer.RabbitMQ
                         if (consumer.Model.IsClosed)
                         {
                             // Recreate the consumer with the new channel
-                            var newConsumer = new QueueingBasicConsumer(_channel);
+                            var newConsumer = new QueueingBasicConsumer(_consumerChannel);
                             _consumers.AddOrUpdate(queue, newConsumer, (dq, dc) => newConsumer);
-                            _channel.BasicConsume(queue, false, "Hangfire.RabbitMq." + Thread.CurrentThread.Name, newConsumer);
+                            _consumerChannel.BasicConsume(queue, false, "Hangfire.RabbitMq." + Thread.CurrentThread.Name, newConsumer);
                             consumer = newConsumer;
                         }
                     }
