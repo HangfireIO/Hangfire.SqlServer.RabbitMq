@@ -26,9 +26,9 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
         }
 
         [Fact]
-        public void UseRabbitMq_AddsMsmqJobQueueProvider()
+        public void UseRabbitMq_AddsRabbitMqJobQueueProvider()
         {
-            _storage.UseRabbitMq(conf => conf.HostName = "localhost");
+            _storage.UseRabbitMq(conf => conf.HostName = "localhost", "default");
 
             var providerTypes = _storage.QueueProviders.Select(x => x.GetType());
             Assert.Contains(typeof(RabbitMqJobQueueProvider), providerTypes);

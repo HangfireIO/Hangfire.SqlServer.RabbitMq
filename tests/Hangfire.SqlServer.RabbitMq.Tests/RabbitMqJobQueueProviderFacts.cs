@@ -34,7 +34,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
         {
             ConnectionFactory configuration = new ConnectionFactory { HostName = HostName };
 
-            return new RabbitMqJobQueueProvider(Queue, configuration);
+            return new RabbitMqJobQueueProvider(Queue, configuration, null);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
 
         public RabbitMqJobQueue CreateQueue()
         {
-            return new RabbitMqJobQueue(_queues, ConnectionFactory);
+            return new RabbitMqJobQueue(_queues, ConnectionFactory, null);
         }
     }
 }
