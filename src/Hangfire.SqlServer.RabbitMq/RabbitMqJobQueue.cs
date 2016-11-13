@@ -146,18 +146,21 @@ namespace Hangfire.SqlServer.RabbitMQ
             {
                 if (_consumerChannel.IsOpen) _consumerChannel.Close();
                 _consumerChannel.Dispose();
+                _consumerChannel = null;
             }
 
             if (_publisherChannel != null)
             {
                 if (_publisherChannel.IsOpen) _publisherChannel.Close();
                 _publisherChannel.Dispose();
+                _publisherChannel = null;
             }
 
             if (_connection != null)
             {
                 if (_connection.IsOpen) _connection.Close();
                 _connection.Dispose();
+                _connection = null;
             }
         }
 

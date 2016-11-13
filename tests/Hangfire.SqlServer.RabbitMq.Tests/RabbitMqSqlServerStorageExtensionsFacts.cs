@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Hangfire.SqlServer.RabbitMq.Tests
 {
-    public class RabbitMqSqlServerStorageExtensionsFacts
+    public class RabbitMqSqlServerStorageExtensionsFacts : IDisposable
     {
         private readonly SqlServerStorage _storage;
 
@@ -32,6 +32,14 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
 
             var providerTypes = _storage.QueueProviders.Select(x => x.GetType());
             Assert.Contains(typeof(RabbitMqJobQueueProvider), providerTypes);
+        }
+
+        public void Dispose()
+        {
+            foreach (var provider in _storage.QueueProviders)
+            {
+                (provider as IDisposable)?.Dispose();
+            }
         }
     }
 }

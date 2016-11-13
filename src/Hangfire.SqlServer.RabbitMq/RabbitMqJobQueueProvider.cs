@@ -4,7 +4,7 @@ using RabbitMQ.Client;
 
 namespace Hangfire.SqlServer.RabbitMQ
 {
-    internal class RabbitMqJobQueueProvider : IPersistentJobQueueProvider
+    internal class RabbitMqJobQueueProvider : IPersistentJobQueueProvider, IDisposable
     {
         private readonly RabbitMqJobQueue _jobQueue;
         private readonly RabbitMqMonitoringApi _monitoringApi;
@@ -27,6 +27,11 @@ namespace Hangfire.SqlServer.RabbitMQ
         public IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi()
         {
             return _monitoringApi;
+        }
+
+        public void Dispose()
+        {
+            _jobQueue.Dispose();
         }
     }
 }
