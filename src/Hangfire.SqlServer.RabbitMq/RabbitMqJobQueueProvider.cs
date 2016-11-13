@@ -10,7 +10,7 @@ namespace Hangfire.SqlServer.RabbitMQ
         private readonly RabbitMqMonitoringApi _monitoringApi;
 
         public RabbitMqJobQueueProvider(string[] queues, ConnectionFactory configureAction,
-            [CanBeNull] Action<IModel> configureConsumer)
+            [CanBeNull] Action<IModel> configureConsumer = null)
         {
             if (queues == null) throw new ArgumentNullException("queues");
             if (configureAction == null) throw new ArgumentNullException("configureAction");

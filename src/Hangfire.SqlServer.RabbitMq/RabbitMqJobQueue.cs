@@ -35,7 +35,7 @@ namespace Hangfire.SqlServer.RabbitMQ
         private static readonly Hangfire.Logging.ILog Logger = Hangfire.Logging.LogProvider.For<RabbitMqJobQueue>();
 
         public RabbitMqJobQueue(IEnumerable<string> queues, ConnectionFactory factory,
-            [CanBeNull] Action<IModel> confConsumer)
+            [CanBeNull] Action<IModel> confConsumer = null)
         {
             if (queues == null) throw new ArgumentNullException("queues");
             if (factory == null) throw new ArgumentNullException("factory");
