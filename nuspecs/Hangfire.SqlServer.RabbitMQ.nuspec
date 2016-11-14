@@ -14,6 +14,9 @@
     <tags>Hangfire SqlServer RabbitMQ</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire.SqlServer.RabbitMq/releases
 
+1.6.2 (by @mthierba)
+* Changed – New 'PrefetchCount' configuration setting - default value '1' for compatibility with previous releases. Recommended to increase in production.
+
 1.6.1 (by @mthierba)
 * Changed – `Hangfire` dependencies upgraded to >=1.6.0.
 * Changed – `RabbitMq.Client` package updated to 4.1.1.
