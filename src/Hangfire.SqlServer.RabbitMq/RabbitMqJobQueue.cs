@@ -26,6 +26,7 @@ namespace Hangfire.SqlServer.RabbitMQ
         private static readonly object PublisherLock = new object();  // used for channel creation and serializing Publish messages
         private readonly IEnumerable<string> _queues;
         private readonly ConnectionFactory _factory;
+        private readonly ushort _prefetchCount;
         private readonly Action<IModel> _confConsumer;
         private readonly ConcurrentDictionary<string, QueueingBasicConsumer> _consumers;
         private IConnection _connection;
@@ -35,13 +36,15 @@ namespace Hangfire.SqlServer.RabbitMQ
         private static readonly Hangfire.Logging.ILog Logger = Hangfire.Logging.LogProvider.For<RabbitMqJobQueue>();
 
         public RabbitMqJobQueue(IEnumerable<string> queues, ConnectionFactory factory,
-            [CanBeNull] Action<IModel> confConsumer = null)
+            [CanBeNull] Action<IModel> confConsumer = null
+            , ushort prefetchCount = RabbitMqConnectionConfiguration.DefaultPrefetchCount)
         {
             if (queues == null) throw new ArgumentNullException("queues");
             if (factory == null) throw new ArgumentNullException("factory");
 
             _queues = queues;
             _factory = factory;
+            _prefetchCount = prefetchCount;
             _confConsumer = confConsumer ?? (_ => {});
             _connection = factory.CreateConnection();
             _consumers = new ConcurrentDictionary<string, QueueingBasicConsumer>();
@@ -195,7 +198,7 @@ namespace Hangfire.SqlServer.RabbitMQ
             }
             channel = _connection.CreateModel();
             channel.BasicQos(0,
-                100 /* TODO Make this a config setting with a sensible default (WorkerCount * 2?) */,
+                _prefetchCount,
                 false // applied separately to each new consumer on the channel
             );
 

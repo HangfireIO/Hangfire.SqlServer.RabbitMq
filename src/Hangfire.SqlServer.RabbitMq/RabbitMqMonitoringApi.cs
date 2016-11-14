@@ -35,7 +35,7 @@ namespace Hangfire.SqlServer.RabbitMQ
         /// </remarks>
         public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
         {
-            using (var client = new RabbitMqJobQueue(new[] {queue}, _factory, null))
+            using (var client = new RabbitMqJobQueue(new[] {queue}, _factory, null, prefetchCount: 0 /* 0 = unlimited*/))
             {
                 var consumer = new Subscription(client.Channel, queue, noAck: false);
 
