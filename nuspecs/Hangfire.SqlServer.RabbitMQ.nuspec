@@ -13,6 +13,16 @@
     <copyright>Copyright © 2014 Denny Ferrassoli</copyright>
     <tags>Hangfire SqlServer RabbitMQ</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire.SqlServer.RabbitMq/releases
+
+1.6.2 (by @mthierba)
+* Changed – New 'PrefetchCount' configuration setting - default value '1' for compatibility with previous releases. Recommended to increase in production.
+
+1.6.1 (by @mthierba)
+* Changed – `Hangfire` dependencies upgraded to >=1.6.0.
+* Changed – `RabbitMq.Client` package updated to 4.1.1.
+* Changed - NuGet platform now Net451 to be compatible with RabbitMQ.Client 4.x.
+* Changed - RabbitMqJobQueueProvider now IDisposable to facilitate proper resource lifetime management.
+* Fixed   – Various reliability and scalability bugs.
     
 1.6.0
 * Changed – `Hangfire` dependencies are not strict now.
@@ -26,14 +36,14 @@
 * Added – Allow a URI to be used for `RabbitMQConnectionConfiguration` (by @dennyferra).
     </releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="1.5.0" />
-      <dependency id="Hangfire.SqlServer" version="1.5.0" />
+      <dependency id="Hangfire.Core" version="1.6.0" />
+      <dependency id="Hangfire.SqlServer" version="1.6.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="net45\Hangfire.SqlServer.RabbitMQ.dll" target="lib\net45" />
-    <file src="net45\Hangfire.SqlServer.RabbitMQ.xml" target="lib\net45" />
-    <file src="net45\Hangfire.SqlServer.RabbitMQ.xml" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.RabbitMQ.dll" target="lib\net451" />
+    <file src="net45\Hangfire.SqlServer.RabbitMQ.xml" target="lib\net451" />
+    <file src="net45\Hangfire.SqlServer.RabbitMQ.xml" target="lib\net451" />
     <file src="..\src\Hangfire.SqlServer.RabbitMQ\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
   </files>
 </package>

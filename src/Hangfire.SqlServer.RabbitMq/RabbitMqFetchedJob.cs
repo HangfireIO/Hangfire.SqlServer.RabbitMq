@@ -1,26 +1,28 @@
 ﻿using System;
-using System.Text;
+using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.Storage;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 
 namespace Hangfire.SqlServer.RabbitMQ
 {
     internal class RabbitMqFetchedJob : IFetchedJob
     {
-        private readonly BasicDeliverEventArgs _message;
-        private IModel _channel;
+        private readonly Action _removeFromQueue;
+        private readonly Action _requeue;
         private bool _completed;
         private bool _disposed;
 
-        public RabbitMqFetchedJob(BasicDeliverEventArgs message, ref IModel channel)
+        private static readonly Hangfire.Logging.ILog Logger = Hangfire.Logging.LogProvider.For<RabbitMqJobQueue>();
+
+        public RabbitMqFetchedJob(string jobId, [NotNull] Action removeFromQueue, [NotNull] Action requeue)
         {
-            if (message == null) throw new ArgumentNullException("message");
+            if (removeFromQueue == null) throw new ArgumentNullException(nameof(removeFromQueue));
+            if (requeue == null) throw new ArgumentNullException(nameof(requeue));
+            _removeFromQueue = removeFromQueue;
+            _requeue = requeue;
 
-            _message = message;
-            _channel = channel;
-
-            JobId = Encoding.UTF8.GetString(_message.Body);
+            JobId = jobId;
+            Logger.Debug($"Job dequeued: {JobId}");
         }
 
         public string JobId { get; private set; }
@@ -28,15 +30,15 @@ namespace Hangfire.SqlServer.RabbitMQ
         public void RemoveFromQueue()
         {
             if (_completed) throw new InvalidOperationException("Job already completed");
-            _channel.BasicAck(_message.DeliveryTag, false);
+            _removeFromQueue();
             _completed = true;
+            Logger.Debug($"Job ACK'ed: {JobId}");
         }
 
         public void Requeue()
         {
             if (_completed) throw new InvalidOperationException("Job already completed");
-            _channel.BasicNack(_message.DeliveryTag, false, true);
-            _channel.Close(global::RabbitMQ.Client.Framing.Constants.ReplySuccess, "Requeue");
+            _requeue();
 
             _completed = true;
         }

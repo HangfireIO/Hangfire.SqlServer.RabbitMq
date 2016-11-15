@@ -20,7 +20,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
         public void Ctor_ThrowsAnException_WhenQueueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RabbitMqJobQueue(null, null));
+                () => new RabbitMqJobQueue(null, null, null));
 
             Assert.Equal("queues", exception.ParamName);
         }
@@ -29,7 +29,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
         public void Ctor_ThrowsAnException_WhenFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RabbitMqJobQueue(new[]{"my-queue"}, null));
+                () => new RabbitMqJobQueue(new[]{"my-queue"}, null, null));
 
             Assert.Equal("factory", exception.ParamName);
         }
