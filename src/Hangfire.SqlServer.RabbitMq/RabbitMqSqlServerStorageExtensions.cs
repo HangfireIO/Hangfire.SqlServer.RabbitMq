@@ -33,7 +33,7 @@ namespace Hangfire.SqlServer.RabbitMQ
 
             var provider = new RabbitMqJobQueueProvider(queues, cf, channel => 
                 channel.BasicQos(0,
-                    100 /* TODO Make this a config setting with a sensible default (WorkerCount * 2?) */,
+                    conf.PrefetchCount,
                     false // applied separately to each new consumer on the channel
                 ));
 
