@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using Hangfire.Annotations;
@@ -79,10 +78,11 @@ namespace Hangfire.SqlServer.RabbitMQ
                             return;
 
                         jobId = Encoding.UTF8.GetString(args.Body);
-                        deliveryTag = args.DeliveryTag;
+                        UnsubscribeConsumers(queues, handler);
                     }
 
-                    consumer.Received -= handler;
+                    deliveryTag = args.DeliveryTag;
+
                     retrieveEvent.Set();
                 };
 
@@ -245,6 +245,20 @@ namespace Hangfire.SqlServer.RabbitMQ
             }
 
             return consumer;
+        }
+
+        private void UnsubscribeConsumers(string[] queues, EventHandler<BasicDeliverEventArgs> handler)
+        {
+            foreach (var queue in queues)
+            {
+                EventingBasicConsumer consumer;
+                bool exists = _consumers.TryGetValue(queue, out consumer);
+                
+                if (!exists || consumer == null)
+                    continue;
+
+                consumer.Received -= handler;
+            }
         }
     }
 }
