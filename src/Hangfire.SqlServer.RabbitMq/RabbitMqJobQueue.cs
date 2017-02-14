@@ -61,40 +61,42 @@ namespace Hangfire.SqlServer.RabbitMQ
         {
             EnsureConsumerChannel();
 
-            var retrieveEvent = new ManualResetEvent(false);
-
             string jobId = null;
             ulong deliveryTag = default(ulong);
-            EventHandler<BasicDeliverEventArgs> handler = null;
 
-            foreach (string queue in queues)
+            using (var retrieveEvent = new ManualResetEvent(false))
             {
-                var consumer = GetConsumerForQueue(queue, cancellationToken);
-                handler = (sender, args) =>
+                EventHandler<BasicDeliverEventArgs> handler = null;
+
+                foreach (string queue in queues)
                 {
-                    lock (RetrieveMessageConsumerLock)
+                    var consumer = GetConsumerForQueue(queue, cancellationToken);
+                    handler = (sender, args) =>
                     {
-                        if (jobId != null)
-                            return;
+                        lock (RetrieveMessageConsumerLock)
+                        {
+                            if (jobId != null)
+                                return;
 
-                        jobId = Encoding.UTF8.GetString(args.Body);
-                        UnsubscribeConsumers(queues, handler);
-                    }
+                            jobId = Encoding.UTF8.GetString(args.Body);
+                            deliveryTag = args.DeliveryTag;
 
-                    deliveryTag = args.DeliveryTag;
+                            UnsubscribeConsumers(queues, handler);
 
-                    retrieveEvent.Set();
-                };
+                            retrieveEvent.Set();
+                        }  
+                    };
 
-                consumer.Received += handler;
-            }
+                    consumer.Received += handler;
+                }
 
-            while (jobId == null)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
+                while (jobId == null)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                retrieveEvent.WaitOne(SyncReceiveTimeout);
-                retrieveEvent.Reset();
+                    retrieveEvent.WaitOne(SyncReceiveTimeout);
+                    retrieveEvent.Reset();
+                }
             }
 
             return new RabbitMqFetchedJob(jobId,
