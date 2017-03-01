@@ -15,7 +15,7 @@ namespace Hangfire.SqlServer.RabbitMQ
     /// <summary>
     /// An <see cref="IPersistentJobQueue"/> implementatation for RabbitMQ.
     /// Maintains a single RabbitMQ <see cref="IConnection"/>, as well as a dedicated <see cref="IModel"/> (aka channel) for publishing and 
-    /// one for consuming messages. The consumer channel owns a <see cref="QueueingBasicConsumer"/> for each
+    /// one for consuming messages. The consumer channel owns a <see cref="EventingBasicConsumer"/> for each
     /// queue configured on the parent <see cref="IPersistentJobQueueProvider"/>.
     /// </summary>
     public class RabbitMqJobQueue : IPersistentJobQueue, IDisposable
