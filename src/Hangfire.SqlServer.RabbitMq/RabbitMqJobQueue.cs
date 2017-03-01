@@ -23,12 +23,11 @@ namespace Hangfire.SqlServer.RabbitMQ
         private static readonly int SyncReceiveTimeout = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
         private static readonly object ConnectionLock = new object(); // used when re-creating the connection
         private static readonly object ConsumerLock = new object();   // used for channel creation and serialzing ACK messages
-        private static readonly object RetrieveMessageConsumerLock = new object();
         private static readonly object PublisherLock = new object();  // used for channel creation and serializing Publish messages
         private readonly IEnumerable<string> _queues;
         private readonly ConnectionFactory _factory;
         private readonly Action<IModel> _confConsumer;
-        private readonly ConcurrentDictionary<string, EventingBasicConsumer> _consumers;
+        private readonly ConcurrentDictionary<string, QueueingBasicConsumer> _consumers;
         private IConnection _connection;
         private IModel _consumerChannel;
         private IModel _publisherChannel;
@@ -45,7 +44,7 @@ namespace Hangfire.SqlServer.RabbitMQ
             _factory = factory;
             _confConsumer = confConsumer ?? (_ => {});
             _connection = factory.CreateConnection();
-            _consumers = new ConcurrentDictionary<string, EventingBasicConsumer>();
+            _consumers = new ConcurrentDictionary<string, QueueingBasicConsumer>();
         }
 
         internal IModel Channel
@@ -61,43 +60,36 @@ namespace Hangfire.SqlServer.RabbitMQ
         {
             EnsureConsumerChannel();
 
-            string jobId = null;
-            ulong deliveryTag = default(ulong);
+            BasicDeliverEventArgs message;
+            var queueIndex = 0;
 
-            using (var retrieveEvent = new ManualResetEvent(false))
+            do
             {
-                EventHandler<BasicDeliverEventArgs> handler = null;
+                queueIndex = (queueIndex + 1) % queues.Length;
+                var queueName = queues[queueIndex];
 
-                foreach (string queue in queues)
+                cancellationToken.ThrowIfCancellationRequested();
+
+                try
                 {
-                    var consumer = GetConsumerForQueue(queue, cancellationToken);
-                    handler = (sender, args) =>
-                    {
-                        lock (RetrieveMessageConsumerLock)
-                        {
-                            if (jobId != null)
-                                return;
-
-                            jobId = Encoding.UTF8.GetString(args.Body);
-                            deliveryTag = args.DeliveryTag;
-
-                            UnsubscribeConsumers(queues, handler);
-
-                            retrieveEvent.Set();
-                        }  
-                    };
-
-                    consumer.Received += handler;
+                    var consumer = GetConsumerForQueue(queueName, cancellationToken);
+                    consumer.Queue.Dequeue(SyncReceiveTimeout, out message);
+                }
+                catch (global::RabbitMQ.Client.Exceptions.AlreadyClosedException)
+                {
+                    EnsureConsumerChannel();
+                    message = null;
+                }
+                catch (System.IO.EndOfStreamException)
+                {
+                    EnsureConsumerChannel();
+                    message = null;
                 }
 
-                while (jobId == null)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
+            } while (message == null);
 
-                    retrieveEvent.WaitOne(SyncReceiveTimeout);
-                    retrieveEvent.Reset();
-                }
-            }
+            var jobId = Encoding.UTF8.GetString(message.Body);
+            var deliveryTag = message.DeliveryTag;
 
             return new RabbitMqFetchedJob(jobId,
                 () => {
@@ -208,9 +200,9 @@ namespace Hangfire.SqlServer.RabbitMQ
                 channel.QueueDeclare(queue, durable: true, exclusive: false, autoDelete: false, arguments: null); // be aware that monitoring API also performs QueueDeclare
         }
 
-        private EventingBasicConsumer GetConsumerForQueue(string queue, CancellationToken cancellationToken)
+        private QueueingBasicConsumer GetConsumerForQueue(string queue, CancellationToken cancellationToken)
         {
-            EventingBasicConsumer  consumer;
+            QueueingBasicConsumer consumer;
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -221,9 +213,9 @@ namespace Hangfire.SqlServer.RabbitMQ
                 {
                     if (!_consumers.TryGetValue(queue, out consumer))
                     {
-                        consumer = new EventingBasicConsumer(_consumerChannel);
+                        consumer = new QueueingBasicConsumer(_consumerChannel);
                         _consumers.AddOrUpdate(queue, consumer, (dq, dc) => consumer);
-                        _consumerChannel.BasicConsume(queue, false, $"Hangfire.RabbitMq.{Thread.CurrentThread.Name}.{queue}", consumer);
+                        _consumerChannel.BasicConsume(queue, false, "Hangfire.RabbitMq." + Thread.CurrentThread.Name, consumer);
                     }
                 }
             }
@@ -237,9 +229,9 @@ namespace Hangfire.SqlServer.RabbitMQ
                         if (consumer.Model.IsClosed)
                         {
                             // Recreate the consumer with the new channel
-                            var newConsumer = new EventingBasicConsumer(_consumerChannel);
+                            var newConsumer = new QueueingBasicConsumer(_consumerChannel);
                             _consumers.AddOrUpdate(queue, newConsumer, (dq, dc) => newConsumer);
-                            _consumerChannel.BasicConsume(queue, false, $"Hangfire.RabbitMq.{Thread.CurrentThread.Name}.{queue}", newConsumer);
+                            _consumerChannel.BasicConsume(queue, false, "Hangfire.RabbitMq." + Thread.CurrentThread.Name, newConsumer);
                             consumer = newConsumer;
                         }
                     }
@@ -247,20 +239,6 @@ namespace Hangfire.SqlServer.RabbitMQ
             }
 
             return consumer;
-        }
-
-        private void UnsubscribeConsumers(string[] queues, EventHandler<BasicDeliverEventArgs> handler)
-        {
-            foreach (var queue in queues)
-            {
-                EventingBasicConsumer consumer;
-                bool exists = _consumers.TryGetValue(queue, out consumer);
-                
-                if (!exists || consumer == null)
-                    continue;
-
-                consumer.Received -= handler;
-            }
         }
     }
 }
