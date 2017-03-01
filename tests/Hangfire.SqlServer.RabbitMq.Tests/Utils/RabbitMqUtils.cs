@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -23,18 +24,28 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
         public static string DequeueJobId(string queue, TimeSpan timeout)
         {
             int timeoutMilliseconds = (int)timeout.TotalMilliseconds;
+            bool dequeued = false;
 
             using (var messageQueue = CleanRabbitMqQueueAttribute.GetMessageQueue(queue))
             {
                 messageQueue.Channel.BasicQos(0, 1, false);
-                var consumer = new QueueingBasicConsumer(messageQueue.Channel);
+                string message = null;
+
+                var consumer = new EventingBasicConsumer(messageQueue.Channel);
+                consumer.Received += (model, ea) =>
+                {
+                    message = Encoding.UTF8.GetString(ea.Body);
+                    dequeued = true;
+                };
+
                 messageQueue.Channel.BasicConsume(queue, false, consumer);
 
-                BasicDeliverEventArgs message;
-                bool dequeued = consumer.Queue.Dequeue(timeoutMilliseconds, out message);
+                var wait = Task.Delay(timeoutMilliseconds);
+                wait.Wait();
+
                 if (dequeued == false) throw new TimeoutException(queue);
 
-                return Encoding.UTF8.GetString(message.Body);
+                return message;
             }
         }
     }
