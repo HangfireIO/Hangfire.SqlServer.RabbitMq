@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -28,22 +29,33 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
 
             using (var messageQueue = CleanRabbitMqQueueAttribute.GetMessageQueue(queue))
             {
-                messageQueue.Channel.BasicQos(0, 1, false);
                 string message = null;
+                var cancel = new CancellationTokenSource();
 
+                messageQueue.Channel.BasicQos(0, 1, false);
                 var consumer = new EventingBasicConsumer(messageQueue.Channel);
                 consumer.Received += (model, ea) =>
                 {
                     message = Encoding.UTF8.GetString(ea.Body);
                     dequeued = true;
+                    messageQueue.Channel.BasicAck(ea.DeliveryTag, false);
+                    cancel.Cancel();
                 };
 
                 messageQueue.Channel.BasicConsume(queue, false, consumer);
 
-                var wait = Task.Delay(timeoutMilliseconds);
-                wait.Wait();
-
-                if (dequeued == false) throw new TimeoutException(queue);
+                try
+                {
+                    Task.Delay(timeoutMilliseconds, cancel.Token).Wait(cancel.Token);
+                }
+                catch (System.OperationCanceledException)
+                {
+                    // Cancellation token triggered
+                }
+                finally
+                {
+                    if (dequeued == false) throw new TimeoutException(queue);
+                }
 
                 return message;
             }
