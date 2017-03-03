@@ -86,6 +86,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             using (var queue = CleanRabbitMqQueueAttribute.GetMessageQueue("queue-1", "queue-2"))
             {
                 var fetchedJob = queue.Dequeue(new[] {"queue-1", "queue-2"}, _token);
+                fetchedJob.RemoveFromQueue();
 
                 Assert.Equal("job-id", fetchedJob.JobId);
             }
