@@ -74,12 +74,14 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="RabbitMqConnectionConfiguration.cs" />
+    <Compile Include="RabbitMqExtensions.cs" />
     <Compile Include="RabbitMqFetchedJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RabbitMqJobQueue.cs" />
     <Compile Include="RabbitMqJobQueueProvider.cs" />
     <Compile Include="RabbitMqMonitoringApi.cs" />
     <Compile Include="RabbitMqSqlServerStorageExtensions.cs" />
+    <Compile Include="RabbitMqTransport.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
