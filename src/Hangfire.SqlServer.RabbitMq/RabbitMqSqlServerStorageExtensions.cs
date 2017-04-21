@@ -31,6 +31,10 @@ namespace Hangfire.SqlServer.RabbitMQ
                 cf.VirtualHost = conf.VirtualHost;
             }
 
+            cf.NetworkRecoveryInterval = conf.NetworkRecoveryInterval;
+            cf.TopologyRecoveryEnabled = conf.TopologyRecoveryEnabled;
+            cf.AutomaticRecoveryEnabled = conf.AutomaticRecoveryEnabled;
+
             var provider = new RabbitMqJobQueueProvider(queues, cf, channel => 
                 channel.BasicQos(0,
                     conf.PrefetchCount,
