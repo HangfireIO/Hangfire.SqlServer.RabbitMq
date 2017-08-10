@@ -73,5 +73,26 @@ namespace Hangfire.SqlServer.RabbitMQ
         /// establish a per-queue concurrency constraint of only one job execution at a time!
         /// </remarks>
         public ushort PrefetchCount { get; set; }
+
+        internal ConnectionFactory CreateConnectionFactory()
+        {
+            var cf = new ConnectionFactory();
+
+            // Use configuration from URI, otherwise use properties
+            if (Uri != null)
+            {
+                cf.uri = Uri;
+            }
+            else
+            {
+                cf.HostName = HostName;
+                cf.Port = Port;
+                cf.UserName = Username;
+                cf.Password = Password;
+                cf.VirtualHost = VirtualHost;
+            }
+
+            return cf;
+        }
     }
 }
