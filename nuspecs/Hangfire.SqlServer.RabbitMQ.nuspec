@@ -12,28 +12,33 @@
     <description>RabbitMQ queues support for SQL Server job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2014 Denny Ferrassoli</copyright>
     <tags>Hangfire SqlServer RabbitMQ</tags>
-    <releaseNotes>https://github.com/HangfireIO/Hangfire.SqlServer.RabbitMq/releases
+    <releaseNotes>
+      https://github.com/HangfireIO/Hangfire.SqlServer.RabbitMq/releases
+      
+      1.6.3 (by @dawidvanzyl)
+      * Changed – `Hangfire` dependencies upgraded to >=1.6.15.      
+      * Added   – Implemented RabbitMqExtensions that will allow for the RabbitMq queues to be added with the GlobalConfiguration.Configuration.Use pattern.
+      
+      1.6.2 (by @mthierba)
+      * Changed – New 'PrefetchCount' configuration setting - default value '1' for compatibility with previous releases. Recommended to increase in production.
 
-1.6.2 (by @mthierba)
-* Changed – New 'PrefetchCount' configuration setting - default value '1' for compatibility with previous releases. Recommended to increase in production.
+      1.6.1 (by @mthierba)
+      * Changed – `Hangfire` dependencies upgraded to >=1.6.0.
+      * Changed – `RabbitMq.Client` package updated to 4.1.1.
+      * Changed - NuGet platform now Net451 to be compatible with RabbitMQ.Client 4.x.
+      * Changed - RabbitMqJobQueueProvider now IDisposable to facilitate proper resource lifetime management.
+      * Fixed   – Various reliability and scalability bugs.
 
-1.6.1 (by @mthierba)
-* Changed – `Hangfire` dependencies upgraded to >=1.6.0.
-* Changed – `RabbitMq.Client` package updated to 4.1.1.
-* Changed - NuGet platform now Net451 to be compatible with RabbitMQ.Client 4.x.
-* Changed - RabbitMqJobQueueProvider now IDisposable to facilitate proper resource lifetime management.
-* Fixed   – Various reliability and scalability bugs.
-    
-1.6.0
-* Changed – `Hangfire` dependencies are not strict now.
-* Changed – `RabbitMq.Client` package updated to 3.6.5.
-* Changed – `RabbitMq.Client.dll` assembly merged with `Hangfire.SqlServer.RabbitMq.dll`.
-    
-1.4.2
-* Fixed – Incompatibility issue with RabbitMQ.Client >= 3.4.0 (by @justmara).
-    
-1.4.0
-* Added – Allow a URI to be used for `RabbitMQConnectionConfiguration` (by @dennyferra).
+      1.6.0
+      * Changed – `Hangfire` dependencies are not strict now.
+      * Changed – `RabbitMq.Client` package updated to 3.6.5.
+      * Changed – `RabbitMq.Client.dll` assembly merged with `Hangfire.SqlServer.RabbitMq.dll`.
+
+      1.4.2
+      * Fixed – Incompatibility issue with RabbitMQ.Client >= 3.4.0 (by @justmara).
+
+      1.4.0
+      * Added – Allow a URI to be used for `RabbitMQConnectionConfiguration` (by @dennyferra).
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="1.6.0" />
