@@ -29,20 +29,14 @@ namespace Hangfire.SqlServer.RabbitMQ
 
         public RabbitMqConnectionConfiguration(Uri uri)
         {
-            if (uri == null) throw new ArgumentNullException("uri");
-
-            Uri = uri;
+            Uri = uri ?? throw new ArgumentNullException("uri");
         }
 
         public RabbitMqConnectionConfiguration(string host, int port, string username, string password, ushort prefetchCount = DefaultPrefetchCount)
         {
-            if (host == null) throw new ArgumentNullException("host");
-            if (username == null) throw new ArgumentNullException("username");
-            if (password == null) throw new ArgumentNullException("password");
-
-            HostName = host;
-            Username = username;
-            Password = password;
+            HostName = host ?? throw new ArgumentNullException("host");
+            Username = username ?? throw new ArgumentNullException("username");
+            Password = password ?? throw new ArgumentNullException("password");
             Port = port;
             VirtualHost = DefaultVirtualHost;
             PrefetchCount = DefaultPrefetchCount;

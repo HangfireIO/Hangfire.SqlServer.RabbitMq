@@ -2,6 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+#if FEATURE_TRANSACTIONSCOPE
+#else
+using System.Data.Common;
+#endif
 using System.Text;
 using System.Threading;
 using Hangfire.Annotations;
@@ -37,11 +41,8 @@ namespace Hangfire.SqlServer.RabbitMQ
         public RabbitMqJobQueue(IEnumerable<string> queues, ConnectionFactory factory,
             [CanBeNull] Action<IModel> confConsumer = null)
         {
-            if (queues == null) throw new ArgumentNullException("queues");
-            if (factory == null) throw new ArgumentNullException("factory");
-
-            _queues = queues;
-            _factory = factory;
+            _queues = queues ?? throw new ArgumentNullException("queues");
+            _factory = factory ?? throw new ArgumentNullException("factory");
             _confConsumer = confConsumer ?? (_ => {});
             _connection = factory.CreateConnection();
             _consumers = new ConcurrentDictionary<string, QueueingBasicConsumer>();
@@ -123,6 +124,7 @@ namespace Hangfire.SqlServer.RabbitMQ
                 });
         }
 
+#if FEATURE_TRANSACTIONSCOPE
         public void Enqueue(IDbConnection connection, string queue, string jobId)
         {
             EnsurePublisherChannel();
@@ -139,6 +141,24 @@ namespace Hangfire.SqlServer.RabbitMQ
                 Logger.Debug($"Job enqueued: {jobId}");
             }
         }
+#else
+        public void Enqueue(DbConnection connection, DbTransaction transaction, string queue, string jobId)
+        {
+            EnsurePublisherChannel();
+
+            lock (PublisherLock) // Serializes all messages on publish channel
+            {
+                var body = Encoding.UTF8.GetBytes(jobId);
+                var properties = _publisherChannel.CreateBasicProperties();
+                properties.Persistent = true;
+
+                // TODO Allow to specify non-default exchange
+                _publisherChannel.BasicPublish("", queue, properties, body);
+
+                Logger.Debug($"Job enqueued: {jobId}");
+            }
+        }
+#endif
 
         public void Dispose()
         {

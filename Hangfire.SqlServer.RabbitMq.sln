@@ -1,24 +1,30 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29209.62
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{15E186DF-8918-44F1-9285-9756EDAECA5D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.SqlServer.RabbitMq", "src\Hangfire.SqlServer.RabbitMq\Hangfire.SqlServer.RabbitMq.csproj", "{4DF0055D-2D50-4D84-84D0-22E547085F77}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E948C5F9-0D40-4389-B02E-B9E8169E8713}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{AB61504F-486B-4049-9FB6-150962792908}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{39890CF7-8357-4580-9B50-2B5213921D72}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
-		.nuget\packages.config = .nuget\packages.config
 		psake-project.ps1 = psake-project.ps1
 		src\SharedAssemblyInfo.cs = src\SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspecs", "nuspecs", "{5E687025-A525-4534-8869-CB685C7B11C4}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspecs", "nuspecs", "{E8782CBD-DF38-4D36-8195-27C4AC0FA094}"
 	ProjectSection(SolutionItems) = preProject
-		nuspecs\Hangfire.SqlServer.RabbitMQ.nuspec = nuspecs\Hangfire.SqlServer.RabbitMQ.nuspec
+		nuspecs\Hangfire.SqlServer.RabbitMq.nuspec = nuspecs\Hangfire.SqlServer.RabbitMq.nuspec
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq.Tests", "tests\Hangfire.SqlServer.RabbitMq.Tests\Hangfire.SqlServer.RabbitMq.Tests.csproj", "{2654D751-33D5-411D-A187-D057FED9CD25}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq", "src\Hangfire.SqlServer.RabbitMq\Hangfire.SqlServer.RabbitMq.csproj", "{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.SqlServer.RabbitMq.Tests", "tests\Hangfire.SqlServer.RabbitMq.Tests\Hangfire.SqlServer.RabbitMq.Tests.csproj", "{A63E78C8-ED33-48F3-8D82-2B9BD7A4FD51}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,16 +32,22 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2654D751-33D5-411D-A187-D057FED9CD25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2654D751-33D5-411D-A187-D057FED9CD25}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2654D751-33D5-411D-A187-D057FED9CD25}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2654D751-33D5-411D-A187-D057FED9CD25}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DF0055D-2D50-4D84-84D0-22E547085F77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DF0055D-2D50-4D84-84D0-22E547085F77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DF0055D-2D50-4D84-84D0-22E547085F77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DF0055D-2D50-4D84-84D0-22E547085F77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A63E78C8-ED33-48F3-8D82-2B9BD7A4FD51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A63E78C8-ED33-48F3-8D82-2B9BD7A4FD51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A63E78C8-ED33-48F3-8D82-2B9BD7A4FD51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A63E78C8-ED33-48F3-8D82-2B9BD7A4FD51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A63E78C8-ED33-48F3-8D82-2B9BD7A4FD51} = {E948C5F9-0D40-4389-B02E-B9E8169E8713}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {27F80A24-DF7B-4E0D-9FE3-942ED403C331}
 	EndGlobalSection
 EndGlobal

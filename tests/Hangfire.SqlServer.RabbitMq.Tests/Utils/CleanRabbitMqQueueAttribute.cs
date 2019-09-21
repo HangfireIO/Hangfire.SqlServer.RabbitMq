@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Threading;
 using Hangfire.SqlServer.RabbitMQ;
-using Xunit;
+using Xunit.Sdk;
 
 namespace Hangfire.SqlServer.RabbitMq.Tests
 {

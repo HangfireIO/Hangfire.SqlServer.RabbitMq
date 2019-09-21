@@ -41,7 +41,17 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             using (var queue = CleanRabbitMqQueueAttribute.GetMessageQueue("my-queue"))
             {
                 // Act
-                queue.Enqueue(new Mock<IDbConnection>().Object, "my-queue", "job-id");
+#if FEATURE_TRANSACTIONSCOPE
+                var connection = new Mock<IDbConnection>().Object;
+                queue.Enqueue(connection, "my-queue", "job-id");
+#else
+                var connection = new Mock<System.Data.Common.DbConnection>().Object;
+                using (var transaction = connection.BeginTransaction())
+                {
+                    queue.Enqueue(connection, transaction, "my-queue", "job-id");
+                    transaction.Commit();
+                }
+#endif
 
                 // Assert
                 var fetchedJob = queue.Dequeue(new[] { "my-queue" }, _token);

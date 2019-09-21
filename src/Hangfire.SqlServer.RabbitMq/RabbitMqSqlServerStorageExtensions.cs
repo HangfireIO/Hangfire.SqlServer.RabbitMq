@@ -20,7 +20,7 @@ namespace Hangfire.SqlServer.RabbitMQ
             // Use configuration from URI, otherwise use properties
             if (conf.Uri != null)
             {
-                cf.uri = conf.Uri;
+                cf.Uri = conf.Uri;
             }
             else
             {
