@@ -8,13 +8,14 @@ Task Build -Depends Clean -Description "Restore all the packages and build the w
 }
 
 Task Merge -Depends Build -Description "Run ILRepack /internalize to merge required assemblies." {
-    Repack-Assembly @("Hangfire.SqlServer.RabbitMq", "net46") @("RabbitMQ.Client")
-    #Repack-Assembly @("Hangfire.SqlServer.RabbitMq", "netstandard2.0") @("RabbitMQ.Client")
+    Repack-Assembly @("Hangfire.SqlServer.RabbitMq", "net452") @("RabbitMQ.Client")
 
     # Referenced packages aren't copied to the output folder in .NET Core <= 2.X. To make ILRepack run,
     # we need to copy them using the `dotnet publish` command prior to merging them. In .NET Core 3.0
     # everything should be working without this extra step.
-    #Publish-Assembly "Hangfire.SqlServer.RabbitMq" "netstandard2.0"
+    Publish-Assembly "Hangfire.SqlServer.RabbitMq" "netstandard2.0"
+
+    Repack-Assembly @("Hangfire.SqlServer.RabbitMq", "netstandard2.0") @("RabbitMQ.Client")
 }
 
 Task Test -Depends Merge -Description "Run unit and integration tests against merged assemblies." {
@@ -25,9 +26,9 @@ Task Test -Depends Merge -Description "Run unit and integration tests against me
     Exec { ls "tests\**\*.csproj" | % { dotnet test -c Release --no-build $_.FullName } }
 }
 
-Task Collect -Depends Test -Description "Copy all artifacts to the build folder." {
-    Collect-Assembly "Hangfire.SqlServer.RabbitMq" "net46"
-    #Collect-Assembly "Hangfire.SqlServer.RabbitMq" "netstandard2.0"
+Task Collect -Depends Merge -Description "Copy all artifacts to the build folder." {
+    Collect-Assembly "Hangfire.SqlServer.RabbitMq" "net452"
+    Collect-Assembly "Hangfire.SqlServer.RabbitMq" "netstandard2.0"
 
     Collect-File "LICENSE.md"
     Collect-File "README.md"

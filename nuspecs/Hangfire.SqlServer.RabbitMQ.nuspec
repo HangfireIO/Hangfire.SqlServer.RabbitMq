@@ -14,6 +14,14 @@
     <tags>Hangfire SqlServer RabbitMQ</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire.SqlServer.RabbitMq/releases
 
+Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
+
+1.7.6 (by @htapal)
+* Changed - `Hangfire` dependencies upgraded >=1.7.6
+* Changed – `RabbitMq.Client` package updated to 5.x.
+* Changed - NuGet platform now Net452 to be compatible with RabbitMQ.Client 5.x.
+* Changed – Project format to .NET SDK and targeted netstandard2.0
+
 1.6.2 (by @mthierba)
 * Changed – New 'PrefetchCount' configuration setting - default value '1' for compatibility with previous releases. Recommended to increase in production.
 
@@ -36,14 +44,19 @@
 * Added – Allow a URI to be used for `RabbitMQConnectionConfiguration` (by @dennyferra).
     </releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="1.6.0" />
-      <dependency id="Hangfire.SqlServer" version="1.6.0" />
+      <dependency id="Hangfire.Core" version="1.7.0" />
+      <dependency id="Hangfire.SqlServer" version="1.7.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="net45\Hangfire.SqlServer.RabbitMQ.dll" target="lib\net451" />
-    <file src="net45\Hangfire.SqlServer.RabbitMQ.xml" target="lib\net451" />
-    <file src="net45\Hangfire.SqlServer.RabbitMQ.xml" target="lib\net451" />
-    <file src="..\src\Hangfire.SqlServer.RabbitMQ\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
+    <file src="net452\Hangfire.SqlServer.RabbitMq.dll" target="lib\net452" />
+    <file src="net452\Hangfire.SqlServer.RabbitMq.xml" target="lib\net452" />
+    <file src="net452\Hangfire.SqlServer.RabbitMq.pdb" target="lib\net452" />
+    
+    <file src="netstandard2.0\Hangfire.SqlServer.RabbitMq.dll" target="lib\netstandard2.0" />
+    <file src="netstandard2.0\Hangfire.SqlServer.RabbitMq.xml" target="lib\netstandard2.0" />
+    <file src="netstandard2.0\Hangfire.SqlServer.RabbitMq.pdb" target="lib\netstandard2.0" />
+
+    <file src="..\src\Hangfire.SqlServer.RabbitMq\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
   </files>
 </package>

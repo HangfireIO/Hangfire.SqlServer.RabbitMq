@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
 #if FEATURE_TRANSACTIONSCOPE
+using System.Data;
 #else
 using System.Data.Common;
 #endif
@@ -126,23 +126,9 @@ namespace Hangfire.SqlServer.RabbitMQ
 
 #if FEATURE_TRANSACTIONSCOPE
         public void Enqueue(IDbConnection connection, string queue, string jobId)
-        {
-            EnsurePublisherChannel();
-
-            lock (PublisherLock) // Serializes all messages on publish channel
-            {
-                var body = Encoding.UTF8.GetBytes(jobId);
-                var properties = _publisherChannel.CreateBasicProperties();
-                properties.Persistent = true;
-
-                // TODO Allow to specify non-default exchange
-                _publisherChannel.BasicPublish("", queue, properties, body);
-
-                Logger.Debug($"Job enqueued: {jobId}");
-            }
-        }
 #else
         public void Enqueue(DbConnection connection, DbTransaction transaction, string queue, string jobId)
+#endif
         {
             EnsurePublisherChannel();
 
@@ -158,7 +144,6 @@ namespace Hangfire.SqlServer.RabbitMQ
                 Logger.Debug($"Job enqueued: {jobId}");
             }
         }
-#endif
 
         public void Dispose()
         {

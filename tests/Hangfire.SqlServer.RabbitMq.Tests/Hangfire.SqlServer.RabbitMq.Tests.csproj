@@ -1,12 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+        <TargetFrameworks>net452</TargetFrameworks>
         <NoWarn>0618</NoWarn>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
-        <DefineConstants>$(DefineConstants);FEATURE_TRANSACTIONSCOPE</DefineConstants>
+    <PropertyGroup Condition="'$(TargetFramework)'=='net452'">
+        <DefineConstants>$(DefineConstants);NET45;NETFULL;FEATURE_TRANSACTIONSCOPE</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,12 +13,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
         <PackageReference Include="xunit" Version="2.4.1" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
         <PackageReference Include="Moq" Version="4.13.0" />
         <PackageReference Include="Hangfire.SqlServer" Version="1.7.6" />
-        <!--<PackageReference Include="RabbitMQ.Client" Version="5.1.1" />-->
         <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)'=='net452'">
+        <!--<PackageReference Include="RabbitMQ.Client" Version="5.1.0" />-->
     </ItemGroup>
 </Project>
