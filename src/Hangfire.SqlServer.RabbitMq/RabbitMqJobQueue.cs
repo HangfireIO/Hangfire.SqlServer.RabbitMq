@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Text;
 using System.Threading;
 using Hangfire.Annotations;
@@ -37,11 +38,8 @@ namespace Hangfire.SqlServer.RabbitMQ
         public RabbitMqJobQueue(IEnumerable<string> queues, ConnectionFactory factory,
             [CanBeNull] Action<IModel> confConsumer = null)
         {
-            if (queues == null) throw new ArgumentNullException("queues");
-            if (factory == null) throw new ArgumentNullException("factory");
-
-            _queues = queues;
-            _factory = factory;
+            _queues = queues ?? throw new ArgumentNullException("queues");
+            _factory = factory ?? throw new ArgumentNullException("factory");
             _confConsumer = confConsumer ?? (_ => {});
             _connection = factory.CreateConnection();
             _consumers = new ConcurrentDictionary<string, QueueingBasicConsumer>();
@@ -138,6 +136,11 @@ namespace Hangfire.SqlServer.RabbitMQ
 
                 Logger.Debug($"Job enqueued: {jobId}");
             }
+        }
+
+        public void Enqueue(DbConnection connection, DbTransaction transaction, string queue, string jobId)
+        {
+            Enqueue(connection, queue, jobId);
         }
 
         public void Dispose()

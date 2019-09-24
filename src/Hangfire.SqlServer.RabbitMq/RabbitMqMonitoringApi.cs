@@ -15,11 +15,8 @@ namespace Hangfire.SqlServer.RabbitMQ
 
         public RabbitMqMonitoringApi(ConnectionFactory factory, params string[] queues)
         {
-            if (queues == null) throw new ArgumentNullException("queues");
-            if (factory == null) throw new ArgumentNullException("factory");
-
-            _queues = queues;
-            _factory = factory;
+            _queues = queues ?? throw new ArgumentNullException("queues");
+            _factory = factory ?? throw new ArgumentNullException("factory");
         }
 
         public IEnumerable<string> GetQueues()
@@ -33,28 +30,26 @@ namespace Hangfire.SqlServer.RabbitMQ
         /// we dispose the RabbitMqJobQueue causing the channel to close. All unack'd
         /// messages then get requeued in order.
         /// </remarks>
-        public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
+        public IEnumerable<long> GetEnqueuedJobIds(string queue, int from, int perPage)
         {
             using (var client = new RabbitMqJobQueue(new[] {queue}, _factory))
             {
-                var consumer = new Subscription(client.Channel, queue, noAck: false);
+                var consumer = new Subscription(client.Channel, queue, true);
+                var jobIds = new List<long>();
 
-                List<int> jobIds = new List<int>();
-                BasicDeliverEventArgs delivery;
-
-                while (consumer.Next(1000, out delivery))
+                while (consumer.Next(1000, out BasicDeliverEventArgs delivery))
                 {
                     var body = Encoding.UTF8.GetString(delivery.Body);
                     jobIds.Add(Convert.ToInt32(body));
                 }
 
-                return jobIds.Skip(@from).Take(perPage);
+                return jobIds.Skip(from).Take(perPage);
             }
         }
 
-        public IEnumerable<int> GetFetchedJobIds(string queue, int @from, int perPage)
+        public IEnumerable<long> GetFetchedJobIds(string queue, int from, int perPage)
         {
-            return Enumerable.Empty<int>();
+            return Enumerable.Empty<long>();
         }
 
         /// <remarks>
