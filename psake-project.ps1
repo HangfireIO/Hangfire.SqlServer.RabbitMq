@@ -9,6 +9,7 @@ Task Build -Depends Clean -Description "Restore all the packages and build the w
 
 Task Merge -Depends Build -Description "Run ILRepack /internalize to merge required assemblies." {
     Repack-Assembly @("Hangfire.SqlServer.RabbitMq", "net452")
+    Repack-Assembly @("Hangfire.SqlServer.RabbitMq", "net472")
     
     # Referenced packages aren't copied to the output folder in .NET Core <= 2.X. To make ILRepack run,
     # we need to copy them using the `dotnet publish` command prior to merging them. In .NET Core 3.0
@@ -28,6 +29,7 @@ Task Test -Depends Merge -Description "Run unit and integration tests against me
 
 Task Collect -Depends Merge -Description "Copy all artifacts to the build folder." {
     Collect-Assembly "Hangfire.SqlServer.RabbitMq" "net452"
+    Collect-Assembly "Hangfire.SqlServer.RabbitMq" "net472"
 
     Collect-Assembly "Hangfire.SqlServer.RabbitMq" "netstandard2.0"
 
