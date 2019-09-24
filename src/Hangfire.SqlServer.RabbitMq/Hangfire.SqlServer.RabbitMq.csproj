@@ -8,15 +8,6 @@
         <RootNamespace>Hangfire.SqlServer.RabbitMq</RootNamespace>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
-        <DefineConstants>$(DefineConstants);NETSTANDARD;NETSTANDARD_20</DefineConstants>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(TargetFramework)'=='net452'">
-        <DebugType>full</DebugType>
-        <DefineConstants>$(DefineConstants);NET45;NETFULL;FEATURE_TRANSACTIONSCOPE</DefineConstants>
-    </PropertyGroup>
-
     <ItemGroup>
         <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
     </ItemGroup>
@@ -26,11 +17,11 @@
         <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(TargetFramework)'=='net452'">
-        <PackageReference Include="RabbitMQ.Client" Version="5.1.0" />
+    <ItemGroup Condition="'$(TargetFramework)'!='net452'">
+        <PackageReference Include="RabbitMQ.Client" Version="5.1.1" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
-        <PackageReference Include="RabbitMQ.Client" Version="5.1.1" />
+    <ItemGroup Condition="'$(TargetFramework)'=='net452'">
+        <PackageReference Include="RabbitMQ.Client" Version="5.1.0" />
     </ItemGroup>
 </Project>

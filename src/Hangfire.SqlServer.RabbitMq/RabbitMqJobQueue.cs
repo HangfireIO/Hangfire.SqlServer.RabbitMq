@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-#if FEATURE_TRANSACTIONSCOPE
 using System.Data;
-#else
 using System.Data.Common;
-#endif
 using System.Text;
 using System.Threading;
 using Hangfire.Annotations;
@@ -124,11 +121,7 @@ namespace Hangfire.SqlServer.RabbitMQ
                 });
         }
 
-#if FEATURE_TRANSACTIONSCOPE
         public void Enqueue(IDbConnection connection, string queue, string jobId)
-#else
-        public void Enqueue(DbConnection connection, DbTransaction transaction, string queue, string jobId)
-#endif
         {
             EnsurePublisherChannel();
 
@@ -143,6 +136,11 @@ namespace Hangfire.SqlServer.RabbitMQ
 
                 Logger.Debug($"Job enqueued: {jobId}");
             }
+        }
+
+        public void Enqueue(DbConnection connection, DbTransaction transaction, string queue, string jobId)
+        {
+            Enqueue(connection, queue, jobId);
         }
 
         public void Dispose()

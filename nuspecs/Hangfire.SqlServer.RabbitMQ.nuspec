@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 <package >
-  <metadata>
-    <id>Hangfire.SqlServer.RabbitMQ</id>
-    <version>0.0.0</version>
-    <title>Hangfire RabbitMQ Queues for SQL Server Storage</title>
-    <authors>Denny Ferrassoli</authors>
-    <owners>dennyferra</owners>
-    <projectUrl>https://github.com/HangfireIO/Hangfire.SqlServer.RabbitMq</projectUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/HangfireIO/Hangfire.SqlServer.RabbitMq/master/LICENSE.md</licenseUrl>
-    <description>RabbitMQ queues support for SQL Server job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2014 Denny Ferrassoli</copyright>
-    <tags>Hangfire SqlServer RabbitMQ</tags>
-    <releaseNotes>https://github.com/HangfireIO/Hangfire.SqlServer.RabbitMq/releases
+    <metadata>
+        <id>Hangfire.SqlServer.RabbitMQ</id>
+        <version>0.0.0</version>
+        <title>Hangfire RabbitMQ Queues for SQL Server Storage</title>
+        <authors>Denny Ferrassoli</authors>
+        <owners>dennyferra</owners>
+        <projectUrl>https://github.com/HangfireIO/Hangfire.SqlServer.RabbitMq</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <licenseUrl>https://raw.github.com/HangfireIO/Hangfire.SqlServer.RabbitMq/master/LICENSE.md</licenseUrl>
+        <description>RabbitMQ queues support for SQL Server job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
+        <copyright>Copyright © 2014 Denny Ferrassoli</copyright>
+        <tags>Hangfire SqlServer RabbitMQ</tags>
+        <releaseNotes>https://github.com/HangfireIO/Hangfire.SqlServer.RabbitMq/releases
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
@@ -43,20 +43,28 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
 1.4.0
 * Added – Allow a URI to be used for `RabbitMQConnectionConfiguration` (by @dennyferra).
     </releaseNotes>
-    <dependencies>
-      <dependency id="Hangfire.Core" version="1.7.0" />
-      <dependency id="Hangfire.SqlServer" version="1.7.0" />
-    </dependencies>
-  </metadata>
-  <files>
-    <file src="net452\Hangfire.SqlServer.RabbitMq.dll" target="lib\net452" />
-    <file src="net452\Hangfire.SqlServer.RabbitMq.xml" target="lib\net452" />
-    <file src="net452\Hangfire.SqlServer.RabbitMq.pdb" target="lib\net452" />
-    
-    <file src="netstandard2.0\Hangfire.SqlServer.RabbitMq.dll" target="lib\netstandard2.0" />
-    <file src="netstandard2.0\Hangfire.SqlServer.RabbitMq.xml" target="lib\netstandard2.0" />
-    <file src="netstandard2.0\Hangfire.SqlServer.RabbitMq.pdb" target="lib\netstandard2.0" />
+        <dependencies>
+            <group targetFramework="net452">
+                <dependency id="Hangfire.Core" version="1.7.0" />
+                <dependency id="Hangfire.SqlServer" version="1.7.0" />
+                <dependency id="RabbitMQ.Client" version="5.1.0" />
+            </group>
+            <group targetFramework="netstandard2.0">
+                <dependency id="Hangfire.Core" version="1.7.0" />
+                <dependency id="Hangfire.SqlServer" version="1.7.0" />
+                <dependency id="RabbitMQ.Client" version="5.1.1" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="net452\Hangfire.SqlServer.RabbitMq.dll" target="lib\net452" />
+        <file src="net452\Hangfire.SqlServer.RabbitMq.xml" target="lib\net452" />
+        <file src="net452\Hangfire.SqlServer.RabbitMq.pdb" target="lib\net452" />
 
-    <file src="..\src\Hangfire.SqlServer.RabbitMq\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
-  </files>
+        <file src="netstandard2.0\Hangfire.SqlServer.RabbitMq.dll" target="lib\netstandard2.0" />
+        <file src="netstandard2.0\Hangfire.SqlServer.RabbitMq.xml" target="lib\netstandard2.0" />
+        <file src="netstandard2.0\Hangfire.SqlServer.RabbitMq.pdb" target="lib\netstandard2.0" />
+
+        <file src="..\src\Hangfire.SqlServer.RabbitMq\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
+    </files>
 </package>

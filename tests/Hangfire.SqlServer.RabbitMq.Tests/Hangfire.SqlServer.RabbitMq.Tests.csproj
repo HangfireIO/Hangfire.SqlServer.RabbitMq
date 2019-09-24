@@ -5,7 +5,8 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFramework)'=='net452'">
-        <DefineConstants>$(DefineConstants);NET45;NETFULL;FEATURE_TRANSACTIONSCOPE</DefineConstants>
+        <DebugType>full</DebugType>
+        <DefineConstants>$(DefineConstants);FEATURE_TRANSACTIONSCOPE;FEATURE_CONFIGURATIONMANAGER;FEATURE_COMMANDSET</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,9 +20,5 @@
         <PackageReference Include="Moq" Version="4.13.0" />
         <PackageReference Include="Hangfire.SqlServer" Version="1.7.6" />
         <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)'=='net452'">
-        <!--<PackageReference Include="RabbitMQ.Client" Version="5.1.0" />-->
     </ItemGroup>
 </Project>
